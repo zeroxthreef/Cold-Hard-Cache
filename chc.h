@@ -12,18 +12,27 @@ extern "C" {
 
 enum
 {
-  USING_CUSTOM_ALLOCATORS = 0b00000000000000000000000000000000
+  USING_CUSTOM_ALLOCATORS = 0b00000000000000000000000000000001
 };
 
 typedef struct
 {
   size_t chunks;
+  size_t lastChunkBytesUsed; /* for a chunk not being used all the way */
   size_t rank; /* the file's rank in the list */
   DATA_TYPE *ChunkLocations;
   char *path;
 } CacheTable_t;
 
-short CHC_Init(size_t maxChunkCount, size_t maxChunk, unsigned int flags);
+typedef struct
+{
+  CacheTable_t *table;
+  size_t maxChunks; /* max number of chunks that the chunksize is at */
+  size_t chunkSize; /* can change this in CHC_Init(); */
+  size_t files;
+} CacheTableGlobals_t;
+
+short CHC_Init(size_t maxChunkCount, size_t maxChunkSize, unsigned int flags);
 
 short CHC_Destroy();
 

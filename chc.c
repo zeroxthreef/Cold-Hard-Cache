@@ -24,12 +24,20 @@ project will be converted to this style because that's way too large of a task *
 #ifdef USE_PTHREADS
   pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 #endif
-
+CacheTableGlobals_t state = {
+  NULL, /* the cache table pointer */
+  0, /* the max chunks var that is set from init */
+  1024, /* default chunk size that can be overridden in the init function */
+  0 /* the file counter var */
+};
+/*
 CacheTable_t *table = NULL;
 
-size_t maxChunks = 0; /* max number of chunks that the chunksize is at */
-size_t chunkSize = 1024; /* can change this in CHC_Init(); */
+size_t maxChunks = 0; * max number of chunks that the chunksize is at *
+size_t chunkSize = 1024; * can change this in CHC_Init(); *
 size_t files = 0;
+*/
+
 
 void *(*CHCAlloc)(size_t bytes) = NULL;
 void *(*CHCRealloc)(void *ptr, size_t bytes) = NULL;
@@ -45,7 +53,7 @@ static short CHC_RemoveEntry(size_t id);
 
 
 
-short CHC_Init(size_t maxChunkCount, size_t maxChunk, unsigned int flags)
+short CHC_Init(size_t maxChunkCount, size_t maxChunkSize, unsigned int flags)
 {
   if(!flags & USING_CUSTOM_ALLOCATORS)
   {
@@ -56,9 +64,9 @@ short CHC_Init(size_t maxChunkCount, size_t maxChunk, unsigned int flags)
     if(CHC_SetMemFree(free))
       return 1;
   }
-
-  maxChunks = maxChunk;
-  maxChunks = maxChunkCount;
+  if(maxChunkSize != 0)
+    state.chunkSize = maxChunkSize;
+  state.maxChunks = maxChunkCount;
 
 
   return 0;
@@ -165,7 +173,8 @@ short CHC_LoadFileFromCacheOrDisk(const char *path, DATA_TYPE *data, size_t *siz
 
 int main(int argc, char **argv)
 {
-
+  printf("Cold hard Cache tester\n");
+  CHC_Init(512, (1024 * 1024) * 1, NULL); /* max of 1MiB a chunk X 512 chunks*/
 
   return 0;
 }
